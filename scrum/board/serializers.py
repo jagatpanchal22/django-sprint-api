@@ -1,7 +1,8 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from .models import Sprint, Task
-from rest_framework.reverse import reverse, reverse_lazy
+from rest_framework.reverse import reverse
+from django.core.exceptions import ValidationError
 
 User = get_user_model()
 
@@ -20,6 +21,15 @@ class SprintSerializer(serializers.ModelSerializer):
     class Meta:
         model = Sprint
         fields = ('id', 'name', 'description', 'start_date', 'end_date', 'links')
+
+    def validate(self, attr):
+        start_date = attr['start_date']
+        end_date = attr['end_date']
+        if end_date <= start_date:
+            raise ValidationError("End date must be after start date")
+        elif (end_date - start_date) < 15:
+            print(end_date - start_date)
+            raise ValidationError("Sprint start and end date must be 15 or more.")
 
 
 class TaskSerializer(serializers.ModelSerializer):
